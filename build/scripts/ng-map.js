@@ -8,7 +8,7 @@ factory(root.angular);
 }
 }(this, function(angular) {
 /**
- * AngularJS Google Maps Ver. 1.17.2
+ * AngularJS Google Maps Ver. 1.17.3
  *
  * The MIT License (MIT)
  * 
@@ -1420,30 +1420,35 @@ angular.module('ngMap', []);
 /* global window, document */
 (function() {
   'use strict';
-  var $timeout, $compile, src, savedHtml;
+  var $timeout, $compile, src, savedHtml, elements = [];
 
   var preLinkFunc = function(scope, element, attrs) {
     var mapsUrl = attrs.mapLazyLoadParams || attrs.mapLazyLoad;
 
-    window.lazyLoadCallback = function() {
-      void 0;
-      $timeout(function() { /* give some time to load */
-        element.html(savedHtml);
-        $compile(element.contents())(scope);
-      }, 100);
-    };
-
     if(window.google === undefined || window.google.maps === undefined) {
+      elements.push({
+        scope: scope,
+        element: element,
+        savedHtml: savedHtml,
+      });
+
       var scriptEl = document.createElement('script');
       void 0;
 
-      scriptEl.src = mapsUrl +
-        (mapsUrl.indexOf('?') > -1 ? '&' : '?') +
-        'callback=lazyLoadCallback';
+      scriptEl.src = mapsUrl;
+      scriptEl.onload = function() {
+        void 0;
+        $timeout(function() { /* give some time to load */
+          elements.forEach(function(elm) {
+              elm.element.html(elm.savedHtml);
+              $compile(elm.element.contents())(elm.scope);
+          });
+        }, 100);
+      };
 
-        if (!document.querySelector('script[src="' + scriptEl.src + '"]')) {
-          document.body.appendChild(scriptEl);
-        }
+      if (!document.querySelector('script[src="' + scriptEl.src + '"]')) {
+        document.body.appendChild(scriptEl);
+      }
     } else {
       element.html(savedHtml);
       $compile(element.contents())(scope);
