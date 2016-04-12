@@ -36,7 +36,7 @@
 /* global window, document */
 (function() {
   'use strict';
-  var $timeout, $compile, src, savedHtml, elements = [];
+  var $timeout, $compile, src, savedHtml = [], elements = [];
 
   var preLinkFunc = function(scope, element, attrs) {
     var mapsUrl = attrs.mapLazyLoadParams || attrs.mapLazyLoad;
@@ -45,7 +45,7 @@
       elements.push({
         scope: scope,
         element: element,
-        savedHtml: savedHtml,
+        savedHtml: savedHtml[elements.length],
       });
 
       var scriptEl = document.createElement('script');
@@ -74,7 +74,7 @@
   var compileFunc = function(tElement, tAttrs) {
 
     (!tAttrs.mapLazyLoad) && console.error('requires src with map-lazy-load');
-    savedHtml = tElement.html();
+    savedHtml.push(tElement.html());
     src = tAttrs.mapLazyLoad;
 
     /**
